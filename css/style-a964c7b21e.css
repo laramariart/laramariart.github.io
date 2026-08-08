@@ -2258,3 +2258,110 @@ article h2 {font-size:14px;letter-spacing: 2px; font-weight: normal; text-transf
 
 @font-face { font-family: 'Inconsolata', monospace;  } 
  @font-face { font-family: 'Inconsolata', monospace; ;}
+
+/* TOP YEAR NAVIGATION */
+
+.top-navigation {
+    position: fixed;
+    top: 0;
+    left: 50px;
+    right: 0;
+    height: 50px;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 2px;
+    box-sizing: border-box;
+
+    background: #fff;
+
+    font-family: 'Inconsolata', monospace;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.top-navigation a {
+    color: #666;
+    text-decoration: none;
+}
+
+.top-navigation a:hover,
+.top-navigation a:active,
+.top-navigation a:focus {
+    color: #edd9cc;
+    text-decoration: none;
+}
+
+.top-navigation .site-name {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.top-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-right: 18px;
+}
+
+.top-links span {
+    color: #666;
+}
+
+
+/* Mobile */
+
+@media screen and (max-width: 768px) {
+
+    .top-navigation {
+        left: 0;
+        height: 45px;
+        padding: 2px;
+        font-size: 13px;
+    }
+
+    .top-links {
+        gap: 7px;
+        padding-right: 10px;
+    }
+
+}
+/* ==========================================
+   Responsive Breakpoint Adjustments
+   ========================================== */
+
+/* Mobile Devices (Screens 600px wide and below) */
+@media screen and max-width: 600px {
+  /* Container adjustment */
+  .article-container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    padding: 0 4px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Force 2 equal columns on mobile */
+  .article-container article,
+  .article-container .hentry {
+    width: 48.5% !important; /* Two columns with a small gap */
+    margin-bottom: 10px !important;
+    float: none !important; /* Prevents desktop float interference */
+    position: static !important; /* Overrides absolute positioning from Masonry on mobile */
+  }
+
+  /* Ensure images fit nicely inside their column */
+  .article-container article img {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  /* Keep guestbook full width across both columns */
+  .article-container article:has(iframe) {
+    width: 100% !important;
+  }
+}
