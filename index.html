@@ -523,16 +523,56 @@ document.onclick=reEnable
 <script type='text/javascript' src='js/jquery.masonry.min.js'></script>
     <script type="text/javascript" src="js/load.js"></script>   
  
-    <div id="sb-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:#000000; z-index:99999999; align-items:center; justify-content:center; -webkit-user-select:none; user-select:none;">
-  <span id="sb-close" style="position:absolute; top:20px; right:25px; color:#ffffff; font-size:40px; font-weight:bold; cursor:pointer; z-index:100000000; line-height:1; font-family:sans-serif;">&times;</span>
-  <img id="sb-img" src="" alt="Enlarged view" style="max-width:92vw; max-height:92vh; object-fit:contain; border-radius:4px; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;" oncontextmenu="return false;">
+   <div id="sb-modal" style="display:none;">
+  <span id="sb-close">&times;</span>
+  <img id="sb-img" src="" alt="Enlarged view">
 </div>
 
 <style>
-  /* Force images and containers to remain clickable despite theme overlays */
-  .article-container, .article-container *, .load.image, .load.image img {
-    pointer-events: auto !important;
-    cursor: pointer !important;
+  #sb-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000;
+    z-index: 99999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Prevent mobile highlights & selections */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+    padding: 20px;
+  }
+
+  /* Responsive image containment */
+  #sb-img {
+    max-width: 85vw;    /* Leaves 15% breathing room around edges */
+    max-height: 85vh;   /* Fits mobile screen height without overflowing */
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Preserves aspect ratio */
+    border-radius: 4px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  }
+
+  #sb-close {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    color: #ffffff;
+    font-size: 38px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 100000000;
+    line-height: 1;
+    font-family: sans-serif;
   }
 </style>
 
@@ -541,23 +581,33 @@ document.onclick=reEnable
   var modal = document.getElementById('sb-modal');
   var modalImg = document.getElementById('sb-img');
 
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var isSwipingOrScrolling = false;
+  var isClosingCooldown = false; // Prevents "chain clicking" when closing
+
   function openBox(src) {
-    if (!src) return;
+    if (!src || isClosingCooldown) return;
     modalImg.src = src;
     modal.style.display = 'flex';
   }
 
-  function closeBox() {
+  function closeBox(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     modal.style.display = 'none';
     modalImg.src = '';
+
+    // Set a 300ms cooldown so closing taps aren't passed to underlying gallery images
+    isClosingCooldown = true;
+    setTimeout(function() {
+      isClosingCooldown = false;
+    }, 300);
   }
 
-  // Variables to track touch movement for scroll detection
-  var touchStartX = 0;
-  var touchStartY = 0;
-  var isSwipingOrScrolling = false;
-
-  // 1. Capture touch start coordinates
+  // 1. Record initial touch coordinates
   window.addEventListener('touchstart', function(e) {
     if (e.touches && e.touches.length > 0) {
       touchStartX = e.touches[0].clientX;
@@ -566,25 +616,28 @@ document.onclick=reEnable
     }
   }, { capture: true, passive: true });
 
-  // 2. Mark as scrolling if finger moves more than 10 pixels
+  // 2. Detect dragging/scrolling
   window.addEventListener('touchmove', function(e) {
     if (e.touches && e.touches.length > 0) {
       var moveX = Math.abs(e.touches[0].clientX - touchStartX);
       var moveY = Math.abs(e.touches[0].clientY - touchStartY);
 
       if (moveX > 10 || moveY > 10) {
-        isSwipingOrScrolling = true; // User is scrolling, not tapping!
+        isSwipingOrScrolling = true;
       }
     }
   }, { capture: true, passive: true });
 
-  // 3. Helper to process image tap
+  // 3. Process taps to open shadowbox
   function handleImageTap(e) {
-    // IGNORE if the user was dragging/scrolling
-    if (isSwipingOrScrolling) return;
+    // Ignore if scrolling or within the close cooldown period
+    if (isSwipingOrScrolling || isClosingCooldown) return;
 
     var target = e.target;
     
+    // Ignore if tapping inside the active modal
+    if (target.closest('#sb-modal')) return;
+
     if (target && target.tagName !== 'IMG') {
       target = target.querySelector('img');
     }
@@ -604,17 +657,15 @@ document.onclick=reEnable
     }
   }
 
-  // Handle tap on end of touch or click
+  // Bind tap handlers for desktop and touch mobile
   window.addEventListener('touchend', handleImageTap, true);
   window.addEventListener('click', handleImageTap, true);
 
-  // Close shadowbox when tapping background or close button
+  // Close shadowbox when tapping anywhere on modal or close button
   modal.addEventListener('click', closeBox, false);
-  modal.addEventListener('touchend', function(e) {
-    if (!isSwipingOrScrolling) closeBox();
-  }, false);
+  modal.addEventListener('touchend', closeBox, false);
 
-  // Disable right-click / context menu
+  // Prevent right-click / context menu
   modal.addEventListener('contextmenu', function(e) {
     e.preventDefault();
     return false;
