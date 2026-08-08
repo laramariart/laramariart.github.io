@@ -523,56 +523,68 @@ document.onclick=reEnable
 <script type='text/javascript' src='js/jquery.masonry.min.js'></script>
     <script type="text/javascript" src="js/load.js"></script>   
  
-   <div id="sb-modal" style="display:none;">
+  <div id="sb-modal" style="display: none;">
   <span id="sb-close">&times;</span>
   <img id="sb-img" src="" alt="Enlarged view">
 </div>
 
 <style>
   #sb-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #000000;
-    z-index: 99999999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* Prevent mobile highlights & selections */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: #000000 !important;
+    z-index: 99999999 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    display: none; /* Controlled by JS: stays hidden until an image is clicked */
+    align-items: center !important;
+    justify-content: center !important;
+    
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    box-sizing: border-box;
-    padding: 20px;
   }
 
-  /* Responsive image containment */
   #sb-img {
-    max-width: 85vw;    /* Leaves 15% breathing room around edges */
-    max-height: 85vh;   /* Fits mobile screen height without overflowing */
-    width: auto;
-    height: auto;
-    object-fit: contain; /* Preserves aspect ratio */
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    -webkit-transform: translate(-50%, -50%) !important;
+    
+    max-width: 85vw !important;
+    max-height: 85vh !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    display: block !important;
+    
     border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   }
 
   #sb-close {
-    position: absolute;
-    top: 15px;
-    right: 25px;
-    color: #ffffff;
-    font-size: 38px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 100000000;
-    line-height: 1;
-    font-family: sans-serif;
+    position: absolute !important;
+    top: 15px !important;
+    right: 25px !important;
+    color: #ffffff !important;
+    font-size: 38px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    z-index: 100000000 !important;
+    line-height: 1 !important;
+    font-family: sans-serif !important;
   }
 </style>
 
@@ -584,7 +596,7 @@ document.onclick=reEnable
   var touchStartX = 0;
   var touchStartY = 0;
   var isSwipingOrScrolling = false;
-  var isClosingCooldown = false; // Prevents "chain clicking" when closing
+  var isClosingCooldown = false;
 
   function openBox(src) {
     if (!src || isClosingCooldown) return;
@@ -600,14 +612,12 @@ document.onclick=reEnable
     modal.style.display = 'none';
     modalImg.src = '';
 
-    // Set a 300ms cooldown so closing taps aren't passed to underlying gallery images
     isClosingCooldown = true;
     setTimeout(function() {
       isClosingCooldown = false;
     }, 300);
   }
 
-  // 1. Record initial touch coordinates
   window.addEventListener('touchstart', function(e) {
     if (e.touches && e.touches.length > 0) {
       touchStartX = e.touches[0].clientX;
@@ -616,7 +626,6 @@ document.onclick=reEnable
     }
   }, { capture: true, passive: true });
 
-  // 2. Detect dragging/scrolling
   window.addEventListener('touchmove', function(e) {
     if (e.touches && e.touches.length > 0) {
       var moveX = Math.abs(e.touches[0].clientX - touchStartX);
@@ -628,14 +637,10 @@ document.onclick=reEnable
     }
   }, { capture: true, passive: true });
 
-  // 3. Process taps to open shadowbox
   function handleImageTap(e) {
-    // Ignore if scrolling or within the close cooldown period
     if (isSwipingOrScrolling || isClosingCooldown) return;
 
     var target = e.target;
-    
-    // Ignore if tapping inside the active modal
     if (target.closest('#sb-modal')) return;
 
     if (target && target.tagName !== 'IMG') {
@@ -657,15 +662,12 @@ document.onclick=reEnable
     }
   }
 
-  // Bind tap handlers for desktop and touch mobile
   window.addEventListener('touchend', handleImageTap, true);
   window.addEventListener('click', handleImageTap, true);
 
-  // Close shadowbox when tapping anywhere on modal or close button
   modal.addEventListener('click', closeBox, false);
   modal.addEventListener('touchend', closeBox, false);
 
-  // Prevent right-click / context menu
   modal.addEventListener('contextmenu', function(e) {
     e.preventDefault();
     return false;
