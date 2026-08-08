@@ -552,17 +552,44 @@ document.onclick=reEnable
     modalImg.src = '';
   }
 
-  // Intercept touch and click events at the window capture phase
+  // Variables to track touch movement for scroll detection
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var isSwipingOrScrolling = false;
+
+  // 1. Capture touch start coordinates
+  window.addEventListener('touchstart', function(e) {
+    if (e.touches && e.touches.length > 0) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      isSwipingOrScrolling = false;
+    }
+  }, { capture: true, passive: true });
+
+  // 2. Mark as scrolling if finger moves more than 10 pixels
+  window.addEventListener('touchmove', function(e) {
+    if (e.touches && e.touches.length > 0) {
+      var moveX = Math.abs(e.touches[0].clientX - touchStartX);
+      var moveY = Math.abs(e.touches[0].clientY - touchStartY);
+
+      if (moveX > 10 || moveY > 10) {
+        isSwipingOrScrolling = true; // User is scrolling, not tapping!
+      }
+    }
+  }, { capture: true, passive: true });
+
+  // 3. Helper to process image tap
   function handleImageTap(e) {
+    // IGNORE if the user was dragging/scrolling
+    if (isSwipingOrScrolling) return;
+
     var target = e.target;
     
-    // Find image if user tapped a wrapper or directly on the image
     if (target && target.tagName !== 'IMG') {
       target = target.querySelector('img');
     }
 
     if (target && target.tagName === 'IMG' && target.id !== 'sb-img') {
-      // Check if inside gallery article container
       var parent = target.parentElement;
       while (parent) {
         if (parent.classList && parent.classList.contains('article-container')) {
@@ -577,15 +604,17 @@ document.onclick=reEnable
     }
   }
 
-  // Listen on both touch and mouse click at capture phase (true)
-  window.addEventListener('click', handleImageTap, true);
+  // Handle tap on end of touch or click
   window.addEventListener('touchend', handleImageTap, true);
+  window.addEventListener('click', handleImageTap, true);
 
-  // Close shadowbox when background or close button is tapped
+  // Close shadowbox when tapping background or close button
   modal.addEventListener('click', closeBox, false);
-  modal.addEventListener('touchend', closeBox, false);
+  modal.addEventListener('touchend', function(e) {
+    if (!isSwipingOrScrolling) closeBox();
+  }, false);
 
-  // Prevent right-click / context menu on modal image
+  // Disable right-click / context menu
   modal.addEventListener('contextmenu', function(e) {
     e.preventDefault();
     return false;
