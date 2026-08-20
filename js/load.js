@@ -1,12 +1,12 @@
 $(document).ready(function() {
     
-    // 1. Immediately fade in the first 5 images right away
-    $('.load:lt(5)').animate({'opacity': '1'}, 900);
+    // 1. Immediately fade in the first 10 images right away
+    $('.load:lt(10)').animate({'opacity': '1'}, 900);
 
-    // 2. Create the scroll function for the REMAINING images
+    // 2. Create the scroll function for the remaining images
     function checkVisibility() {
-        // Use :gt(4) to only check elements with an index greater than 4 (the 6th image onwards)
-        $('.load:gt(4)').each(function() {
+        // Only check elements with an index greater than 9 (the 11th image onwards)
+        $('.load:gt(9)').each(function() {
             var top_of_object = $(this).offset().top;
             var bottom_of_window = $(window).scrollTop() + $(window).height();
             
@@ -16,7 +16,7 @@ $(document).ready(function() {
         });
     }
 
-    // 3. Run the check on load (in case images 6+ are also visible on a large screen)
+    // 3. Run the check on load in case images 11+ are also visible
     checkVisibility();
 
     // 4. Run the check on scroll
