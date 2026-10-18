@@ -199,6 +199,160 @@ GUESTBOOK END-->
 		<script type='text/javascript' src='js/masonry.min.js'></script>
 <script type='text/javascript' src='js/jquery.masonry.min.js'></script>
     <script type="text/javascript" src="js/load.js"></script>   
+    
+<!-- Shadowbox -->
+    
+<div id="sb-modal" style="display: none;">
+  <span id="sb-close">&times;</span>
+  <img id="sb-img" src="" alt="Enlarged view">
+</div>
+
+<style>
+  #sb-modal {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important; /* Dynamically adjusts to mobile address/search bars */
+    background-color: #000000 !important;
+    z-index: 99999999 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    /* Pure Flexbox centering relative to actual visible screen area */
+    display: none; 
+    align-items: center !important;
+    justify-content: center !important;
+    
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #sb-img {
+    position: relative !important;
+    max-width: 85vw !important;
+    max-height: 85dvh !important; /* Respects visible mobile height */
+    max-height: 85vh !important;  /* Fallback for older browsers */
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    
+    margin: auto !important;
+    padding: 0 !important;
+    border: none !important;
+    display: block !important;
+    
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  #sb-close {
+    position: absolute !important;
+    top: 20px !important;
+    right: 25px !important;
+    color: #ffffff !important;
+    font-size: 38px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    z-index: 100000000 !important;
+    line-height: 1 !important;
+    font-family: sans-serif !important;
+  }
+</style>
+
+<script>
+(function() {
+  var modal = document.getElementById('sb-modal');
+  var modalImg = document.getElementById('sb-img');
+
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var isSwipingOrScrolling = false;
+  var isClosingCooldown = false;
+
+  function openBox(src) {
+    if (!src || isClosingCooldown) return;
+    modalImg.src = src;
+    modal.style.display = 'flex';
+  }
+
+  function closeBox(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    modal.style.display = 'none';
+    modalImg.src = '';
+
+    isClosingCooldown = true;
+    setTimeout(function() {
+      isClosingCooldown = false;
+    }, 300);
+  }
+
+  window.addEventListener('touchstart', function(e) {
+    if (e.touches && e.touches.length > 0) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      isSwipingOrScrolling = false;
+    }
+  }, { capture: true, passive: true });
+
+  window.addEventListener('touchmove', function(e) {
+    if (e.touches && e.touches.length > 0) {
+      var moveX = Math.abs(e.touches[0].clientX - touchStartX);
+      var moveY = Math.abs(e.touches[0].clientY - touchStartY);
+
+      if (moveX > 10 || moveY > 10) {
+        isSwipingOrScrolling = true;
+      }
+    }
+  }, { capture: true, passive: true });
+
+  function handleImageTap(e) {
+    if (isSwipingOrScrolling || isClosingCooldown) return;
+
+    var target = e.target;
+    if (target.closest('#sb-modal')) return;
+
+    if (target && target.tagName !== 'IMG') {
+      target = target.querySelector('img');
+    }
+
+    if (target && target.tagName === 'IMG' && target.id !== 'sb-img') {
+      var parent = target.parentElement;
+      while (parent) {
+        if (parent.classList && parent.classList.contains('article-container')) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+          openBox(target.src);
+          return false;
+        }
+        parent = parent.parentElement;
+      }
+    }
+  }
+
+  window.addEventListener('touchend', handleImageTap, true);
+  window.addEventListener('click', handleImageTap, true);
+
+  modal.addEventListener('click', closeBox, false);
+  modal.addEventListener('touchend', closeBox, false);
+
+  modal.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+})();
+</script>
  
 <!-- Default Statcounter code for laramari.art
 https://laramari.art/ -->
